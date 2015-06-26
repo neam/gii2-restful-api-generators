@@ -26,6 +26,7 @@
         "bootstrap": "neam\\gii2_restful_api_generators\\Bootstrap"
     },
     "require": {
-        "schmunk42/yii2-giiant": "*"
+        "neam/gii2-dna-project-base-model-generators": "*",
+        "neam/gii2-workflow-ui-generators": "*"
     }
 }
