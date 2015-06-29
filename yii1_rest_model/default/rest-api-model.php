@@ -55,13 +55,30 @@ class BaseRestApi<?=$modelClassSingular?> extends <?=$modelClassSingular."\n"?>
         return array(
 <?php
 foreach ($model->relations() as $relation => $relationInfo):
-$relatedModelClass = $relationInfo[1];
+$relatedModelClass = "RestApi".$relationInfo[1];
+
+    switch ($relationInfo[0]) {
+        case CActiveRecord::HAS_MANY:
+        case CActiveRecord::MANY_MANY:
 ?>
             '<?=$relation?>' => RelatedItems::formatItems(
                 "<?=$relatedModelClass?>",
                 $this-><?=$relation."\n"?>
             ),
 <?php
+            break;
+        case CActiveRecord::BELONGS_TO:
+        case CActiveRecord::HAS_ONE:
+?>
+            '<?=$relation?>' => RelatedItems::formatItem(
+                "<?=$relatedModelClass?>",
+                $this-><?=$relation."\n"?>
+            ),
+<?php
+            break;
+            break;
+    }
+
 endforeach;
 ?>
         );
