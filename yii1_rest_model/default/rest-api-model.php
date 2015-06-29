@@ -39,49 +39,8 @@ class BaseRestApi<?=$modelClassSingular?> extends <?=$modelClassSingular."\n"?>
                 $this->getListableAttributes(),
                 array()
             ),
-            'relations' => array_merge(
-                $this->getRelationAttributes(),
-                array()
-            ),
         );
 
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getRelationAttributes()
-    {
-        return array(
-<?php
-foreach ($model->relations() as $relation => $relationInfo):
-$relatedModelClass = "RestApi".$relationInfo[1];
-
-    switch ($relationInfo[0]) {
-        case CActiveRecord::HAS_MANY:
-        case CActiveRecord::MANY_MANY:
-?>
-            '<?=$relation?>' => RelatedItems::formatItems(
-                "<?=$relatedModelClass?>",
-                $this-><?=$relation."\n"?>
-            ),
-<?php
-            break;
-        case CActiveRecord::BELONGS_TO:
-        case CActiveRecord::HAS_ONE:
-?>
-            '<?=$relation?>' => RelatedItems::formatItem(
-                "<?=$relatedModelClass?>",
-                $this-><?=$relation."\n"?>
-            ),
-<?php
-            break;
-            break;
-    }
-
-endforeach;
-?>
-        );
     }
 
     /**
@@ -90,12 +49,60 @@ endforeach;
     public function getListableAttributes()
     {
         return array(
-            'id' => $this->id,
 <?php
-foreach ($model->getSafeAttributeNames() as $attributeName):
+if (!method_exists($model, 'itemTypeAttributes')) {
+    throw new Exception("Model ".get_class($model)." does not have method itemTypeAttributes()");
+}
+$relations = $model->relations();
+foreach ($model->itemTypeAttributes() as $attribute => $attributeInfo):
+
+    switch ($attributeInfo["type"]) {
+        case "has-many-relation":
+        case "many-many-relation":
+
+            if (!isset($relations[$attribute])) {
+                throw new Exception("Model ".get_class($model)." does not have a relation '$attribute'");
+            }
+            $relationInfo = $relations[$attribute];
+            $relatedModelClass = "RestApi".$relationInfo[1];
+
+            // tmp until memory allocation has been resolved
+            break;
+
 ?>
-            '<?=$attributeName?>' => $this-><?=$attributeName?>,
+            '<?=$attribute?>' => RelatedItems::formatItems(
+                "<?=$relatedModelClass?>",
+                $this-><?=$attribute."\n"?>
+            ),
 <?php
+            break;
+        case "has-one-relation":
+        case "belongs-to-relation":
+
+            if (!isset($relations[$attribute])) {
+                throw new Exception("Model ".get_class($model)." does not have a relation '$attribute'");
+            }
+            $relationInfo = $relations[$attribute];
+            $relatedModelClass = "RestApi".$relationInfo[1];
+
+?>
+            '<?=$attribute?>' => RelatedItems::formatItem(
+                "<?=$relatedModelClass?>",
+                $this-><?=$attribute."\n"?>
+            ),
+<?php
+            break;
+        case "ordinary":
+        case "primary-key":
+?>
+            '<?=$attribute?>' => $this-><?=$attribute?>,
+<?php
+            break;
+        default:
+            // ignore
+            break;
+    }
+
 endforeach;
 ?>
         );
@@ -106,12 +113,9 @@ endforeach;
      */
     public function getRelatedAttributes()
     {
-        return array_merge(
-            array(
-                'id' => $this->id,
-            ),
-            $this->getListableAttributes()
-        );
+        $listableAttributes = $this->getListableAttributes();
+        // remote attributes that cause recursion here
+        return $listableAttributes;
     }
 
 }
