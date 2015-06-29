@@ -31,7 +31,9 @@ class BaseRestApi<?=$modelClassSingular?> extends <?=$modelClassSingular."\n"?>
     public function getAllAttributes()
     {
         return array(
+<?php if (in_array($modelClassSingular, array_keys(\ItemTypes::where('is_graph_relatable')))): ?>
             'node_id' => (int) $this->ensureNode()->id,
+<?php endif; ?>
             'item_type' => '<?= $itemTypeSingularRef ?>',
             'attributes' => array_merge(
                 $this->getListableAttributes(),
