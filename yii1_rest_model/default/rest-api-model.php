@@ -31,16 +31,28 @@ class BaseRestApi<?=$modelClassSingular?> extends <?=$modelClassSingular."\n"?>
     public function getAllAttributes()
     {
         return array(
+            'id' => (int) $this->id,
 <?php if (in_array($modelClassSingular, array_keys(\ItemTypes::where('is_graph_relatable')))): ?>
             'node_id' => (int) $this->ensureNode()->id,
 <?php endif; ?>
             'item_type' => '<?= $itemTypeSingularRef ?>',
+            'item_label' => $this->itemLabel,
             'attributes' => array_merge(
                 $this->getListableAttributes(),
                 array()
             ),
         );
 
+    }
+
+    public function setCreateAttributes($requestAttributes)
+    {
+        $this->setItemAttributes($requestAttributes);
+    }
+
+    public function setUpdateAttributes($requestAttributes)
+    {
+        $this->setItemAttributes($requestAttributes);
     }
 
     /**
@@ -66,7 +78,7 @@ foreach ($model->itemTypeAttributes() as $attribute => $attributeInfo):
             $relationInfo = $relations[$attribute];
             $relatedModelClass = "RestApi".$relationInfo[1];
 
-            // tmp until memory allocation has been resolved
+            // tmp until memory allocation has been resolved (likely via pagination and/or returning metadata about relations instead of the actual objects)
             break;
 
 ?>
@@ -116,6 +128,69 @@ endforeach;
         $listableAttributes = $this->getListableAttributes();
         // remote attributes that cause recursion here
         return $listableAttributes;
+    }
+
+    /**
+     * Sets the underlying item attributes.
+     */
+    public function setItemAttributes($requestAttributes)
+    {
+<?php
+if (!method_exists($model, 'itemTypeAttributes')) {
+    throw new Exception("Model ".get_class($model)." does not have method itemTypeAttributes()");
+}
+$relations = $model->relations();
+foreach ($model->itemTypeAttributes() as $attribute => $attributeInfo):
+
+    switch ($attributeInfo["type"]) {
+        case "has-many-relation":
+        case "many-many-relation":
+        case "belongs-to-relation":
+
+            if (!isset($relations[$attribute])) {
+                throw new Exception("Model ".get_class($model)." does not have a relation '$attribute'");
+            }
+            $relationInfo = $relations[$attribute];
+            $relatedModelClass = "RestApi".$relationInfo[1];
+
+            // tmp ignore for now - may be implemented later
+            // requires some refactoring, proper use of transactions and handling of various edge cases
+            break;
+
+?>
+        RelatedItems::set|saveRelatedItems(
+            "<?=$relatedModelClass?>",
+            '<?=$attribute?>',
+            $requestAttributes['attributes']['<?=$attribute?>']
+        ),
+<?php
+            break;
+        case "has-one-relation":
+
+            if (!isset($relations[$attribute])) {
+                throw new Exception("Model ".get_class($model)." does not have a relation '$attribute'");
+            }
+            $relationInfo = $relations[$attribute];
+            $relatedModelClass = "RestApi".$relationInfo[1];
+            $fkAttribute = $relationInfo[2];
+
+?>
+        $this-><?=$fkAttribute?> = $requestAttributes['attributes']-><?=$attribute?>->id;
+<?php
+            break;
+        case "ordinary":
+        case "primary-key":
+?>
+        $this-><?=$attribute?> = $requestAttributes['attributes']-><?=$attribute?>;
+<?php
+            break;
+        default:
+            // ignore
+            break;
+    }
+
+endforeach;
+?>
     }
 
 }
