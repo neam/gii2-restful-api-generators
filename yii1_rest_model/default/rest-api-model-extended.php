@@ -25,9 +25,27 @@ class RestApi<?=$modelClassSingular?> extends BaseRestApi<?=$modelClassSingular.
     /**
      * @inheritdoc
      */
-    public function getAllAttributes()
+    public static function getApiAttributes($item)
     {
-        $return = parent::getAllAttributes();
+        $return = parent::getApiAttributes($item);
+        return $return;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getListableAttributes($item)
+    {
+        $return = parent::getListableAttributes($item);
+        return $return;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getRelatedAttributes($item)
+    {
+        $return = parent::getRelatedAttributes($item);
         return $return;
     }
 
@@ -45,24 +63,6 @@ class RestApi<?=$modelClassSingular?> extends BaseRestApi<?=$modelClassSingular.
     public function setUpdateAttributes($requestAttributes)
     {
         parent::setUpdateAttributes($requestAttributes);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getListableAttributes()
-    {
-        $return = parent::getListableAttributes();
-        return $return;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getRelatedAttributes()
-    {
-        $return = parent::getRelatedAttributes();
-        return $return;
     }
 
     /**

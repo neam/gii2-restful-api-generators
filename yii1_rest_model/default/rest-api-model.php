@@ -30,35 +30,35 @@ class BaseRestApi<?=$modelClassSingular?> extends <?=$modelClassSingular."\n"?>
      */
     public function getAllAttributes()
     {
+        return static::getApiAttributes($this);
+    }
+
+    /**
+     * Returns rest api attributes for this resource.
+     *
+     * @return array
+     */
+    public static function getApiAttributes($item)
+    {
         return array(
-            'id' => (int) $this->id,
+            'id' => $item->id,
 <?php if (in_array($modelClassSingular, array_keys(\ItemTypes::where('is_graph_relatable')))): ?>
-            'node_id' => (int) $this->ensureNode()->id,
+            'node_id' => $item->id ? (int) $item->ensureNode()->id : null,
 <?php endif; ?>
             'item_type' => '<?= $itemTypeSingularRef ?>',
-            'item_label' => $this->itemLabel,
+            'item_label' => $item->itemLabel,
             'attributes' => array_merge(
-                $this->getListableAttributes(),
+                static::getListableAttributes($item),
                 array()
             ),
         );
 
     }
 
-    public function setCreateAttributes($requestAttributes)
-    {
-        $this->setItemAttributes($requestAttributes);
-    }
-
-    public function setUpdateAttributes($requestAttributes)
-    {
-        $this->setItemAttributes($requestAttributes);
-    }
-
     /**
      * @inheritdoc
      */
-    public function getListableAttributes()
+    public static function getListableAttributes($item)
     {
         return array(
 <?php
@@ -76,7 +76,7 @@ foreach ($model->itemTypeAttributes() as $attribute => $attributeInfo):
                 throw new Exception("Model ".get_class($model)." does not have a relation '$attribute'");
             }
             $relationInfo = $relations[$attribute];
-            $relatedModelClass = "RestApi".$relationInfo[1];
+            $relatedModelClass = $relationInfo[1];
 
             // tmp until memory allocation has been resolved (likely via pagination and/or returning metadata about relations instead of the actual objects)
             break;
@@ -84,7 +84,8 @@ foreach ($model->itemTypeAttributes() as $attribute => $attributeInfo):
 ?>
             '<?=$attribute?>' => RelatedItems::formatItems(
                 "<?=$relatedModelClass?>",
-                $this-><?=$attribute."\n"?>
+                $item,
+                "<?=$attribute?>"
             ),
 <?php
             break;
@@ -95,19 +96,20 @@ foreach ($model->itemTypeAttributes() as $attribute => $attributeInfo):
                 throw new Exception("Model ".get_class($model)." does not have a relation '$attribute'");
             }
             $relationInfo = $relations[$attribute];
-            $relatedModelClass = "RestApi".$relationInfo[1];
+            $relatedModelClass = $relationInfo[1];
 
 ?>
             '<?=$attribute?>' => RelatedItems::formatItem(
                 "<?=$relatedModelClass?>",
-                $this-><?=$attribute."\n"?>
+                $item,
+                "<?=$attribute?>"
             ),
 <?php
             break;
         case "ordinary":
         case "primary-key":
 ?>
-            '<?=$attribute?>' => $this-><?=$attribute?>,
+            '<?=$attribute?>' => $item-><?=$attribute?>,
 <?php
             break;
         default:
@@ -123,11 +125,21 @@ endforeach;
     /**
      * @inheritdoc
      */
-    public function getRelatedAttributes()
+    public static function getRelatedAttributes($item)
     {
-        $listableAttributes = $this->getListableAttributes();
+        $attributes = static::getApiAttributes($item);
         // remote attributes that cause recursion here
-        return $listableAttributes;
+        return $attributes;
+    }
+
+    public function setCreateAttributes($requestAttributes)
+    {
+        $this->setItemAttributes($requestAttributes);
+    }
+
+    public function setUpdateAttributes($requestAttributes)
+    {
+        $this->setItemAttributes($requestAttributes);
     }
 
     /**
