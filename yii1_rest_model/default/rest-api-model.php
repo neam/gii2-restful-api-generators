@@ -38,7 +38,7 @@ class BaseRestApi<?=$modelClassSingular?> extends <?=$modelClassSingular."\n"?>
      *
      * @return array
      */
-    public static function getApiAttributes($item)
+    public static function getApiAttributes($item, $level = 0)
     {
         return array(
             'id' => $item->id,
@@ -48,7 +48,7 @@ class BaseRestApi<?=$modelClassSingular?> extends <?=$modelClassSingular."\n"?>
             'item_type' => '<?= $itemTypeSingularRef ?>',
             'item_label' => $item->itemLabel,
             'attributes' => array_merge(
-                static::getListableAttributes($item),
+                static::getListableAttributes($item, $level),
                 array()
             ),
         );
@@ -58,8 +58,12 @@ class BaseRestApi<?=$modelClassSingular?> extends <?=$modelClassSingular."\n"?>
     /**
      * @inheritdoc
      */
-    public static function getListableAttributes($item)
+    public static function getListableAttributes($item, $level = 0)
     {
+        // Only supply related attributes at root and first level
+        if ($level > 1) {
+            return array("_suppressed_at_level" => $level);
+        }
         return array(
 <?php
 if (!method_exists($model, 'itemTypeAttributes')) {
@@ -85,7 +89,8 @@ foreach ($model->itemTypeAttributes() as $attribute => $attributeInfo):
             '<?=$attribute?>' => RelatedItems::formatItems(
                 "<?=$relatedModelClass?>",
                 $item,
-                "<?=$attribute?>"
+                "<?=$attribute?>",
+                $level
             ),
 <?php
             break;
@@ -102,7 +107,8 @@ foreach ($model->itemTypeAttributes() as $attribute => $attributeInfo):
             '<?=$attribute?>' => RelatedItems::formatItem(
                 "<?=$relatedModelClass?>",
                 $item,
-                "<?=$attribute?>"
+                "<?=$attribute?>",
+                $level
             ),
 <?php
             break;
@@ -125,9 +131,9 @@ endforeach;
     /**
      * @inheritdoc
      */
-    public static function getRelatedAttributes($item)
+    public static function getRelatedAttributes($item, $level)
     {
-        $attributes = static::getApiAttributes($item);
+        $attributes = static::getApiAttributes($item, $level);
         // remote attributes that cause recursion here
         return $attributes;
     }
