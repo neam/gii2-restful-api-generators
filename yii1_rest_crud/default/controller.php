@@ -10,6 +10,8 @@ $modelClassSingularWords = Inflector::camel2words($modelClassSingular);
 $modelClassPluralWords = Inflector::pluralize($modelClassSingularWords);
 $modelClassPlural = Inflector::camelize($modelClassPluralWords);
 
+$dnaModelClassSingular = str_replace("RestApi", "", $modelClassSingular);
+
 echo "<?php\n";
 ?>
 
@@ -23,12 +25,14 @@ class <?=$generator->controllerClass?> extends <?=$generator->baseControllerClas
         return array(
             'list' => array( //use for get list of objects
                 'class' => 'WRestListAction',
-                'filterBy' => array( //this param user in `where` expression when forming an db query
-                    'foo' => 'bar', // 'name_in_table' => 'request_param_name'
+                'filterBy' => array(
+                    //this param is used in `where` expression when forming an db query
+                    // 'name_in_table' => '<?= $dnaModelClassSingular ?>_request_param_name'
+                    'foo' => 'bar',
                 ),
-                'limit' => 'limit', //request parameter name, which will contain limit of object
-                'page' => 'page', //request parameter name, which will contain requested page num
-                'order' => 'order', //request parameter name, which will contain ordering for sort
+                'limit' => '<?= $dnaModelClassSingular ?>_limit', //request parameter name, which will contain limit of object
+                'page' => '<?= $dnaModelClassSingular ?>_page', //request parameter name, which will contain requested page num
+                'order' => '<?= $dnaModelClassSingular ?>_order', //request parameter name, which will contain ordering for sort
             ),
             'delete' => 'WRestDeleteAction',
             'get' => 'WRestGetAction',
