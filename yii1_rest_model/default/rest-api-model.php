@@ -30,7 +30,8 @@ class BaseRestApi<?=$modelClassSingular?> extends <?=$modelClassSingular."\n"?>
      */
     public function getAllAttributes()
     {
-        return static::getApiAttributes($this);
+        $item = \propel\models\<?=$modelClassSingular?>Query::create()->findOneById($this->id);
+        return static::getApiAttributes($item);
     }
 
     /**
@@ -38,15 +39,15 @@ class BaseRestApi<?=$modelClassSingular?> extends <?=$modelClassSingular."\n"?>
      *
      * @return array
      */
-    public static function getApiAttributes($item, $level = 0)
+    public static function getApiAttributes(\propel\models\<?=$modelClassSingular?> $item, $level = 0)
     {
         return array(
-            'id' => $item->id,
+            'id' => $item->getId(),
 <?php if (in_array($modelClassSingular, array_keys(\ItemTypes::where('is_graph_relatable')))): ?>
-            'node_id' => $item->id ? (int) $item->ensureNode()->id : null,
+            'node_id' => $item->getId() ? (int) /* $item->ensureNode()->id */ -1 : null,
 <?php endif; ?>
             'item_type' => '<?= $itemTypeSingularRef ?>',
-            'item_label' => $item->itemLabel,
+            'item_label' => $item->getId() ? $item->getItemLabel() : '[[none]]',
             'attributes' => array_merge(
                 static::getListableAttributes($item, $level),
                 array()
@@ -58,7 +59,7 @@ class BaseRestApi<?=$modelClassSingular?> extends <?=$modelClassSingular."\n"?>
     /**
      * @inheritdoc
      */
-    public static function getListableAttributes($item, $level = 0)
+    public static function getListableAttributes(\propel\models\<?=$modelClassSingular?> $item, $level = 0)
     {
         // Only supply related attributes at root and first level
         if ($level > 1) {
@@ -81,6 +82,7 @@ foreach ($model->itemTypeAttributes() as $attribute => $attributeInfo):
             }
             $relationInfo = $relations[$attribute];
             $relatedModelClass = $relationInfo[1];
+            $relationAttribute = $relationInfo[2];
 
             // tmp until memory allocation has been resolved (likely via pagination and/or returning metadata about relations instead of the actual objects)
             break;
@@ -89,7 +91,7 @@ foreach ($model->itemTypeAttributes() as $attribute => $attributeInfo):
             '<?=$attribute?>' => RelatedItems::formatItems(
                 "<?=$relatedModelClass?>",
                 $item,
-                "<?=$attribute?>",
+                "<?=Inflector::camelize($relationAttribute)?>",
                 $level
             ),
 <?php
@@ -102,20 +104,22 @@ foreach ($model->itemTypeAttributes() as $attribute => $attributeInfo):
             }
             $relationInfo = $relations[$attribute];
             $relatedModelClass = $relationInfo[1];
+            $relationAttribute = $relationInfo[2];
 
 ?>
             '<?=$attribute?>' => RelatedItems::formatItem(
                 "<?=$relatedModelClass?>",
                 $item,
-                "<?=$attribute?>",
+                "<?=Inflector::camelize($relationAttribute)?>",
                 $level
             ),
 <?php
             break;
         case "ordinary":
         case "primary-key":
+            $camelizedAttribute = Inflector::camelize($attribute);
 ?>
-            '<?=$attribute?>' => $item-><?=$attribute?>,
+            '<?=$attribute?>' => $item->get<?=$camelizedAttribute?>("Y-m-d H:i:s"),
 <?php
             break;
         default:
@@ -131,7 +135,7 @@ endforeach;
     /**
      * @inheritdoc
      */
-    public static function getRelatedAttributes($item, $level)
+    public static function getRelatedAttributes(\propel\models\<?=$modelClassSingular?> $item, $level)
     {
         $attributes = static::getApiAttributes($item, $level);
         // remote attributes that cause recursion here
