@@ -17,14 +17,6 @@ class RestApi<?=$modelClassSingular?> extends BaseRestApi<?=$modelClassSingular.
     /**
      * @inheritdoc
      */
-    public static function model($className = __CLASS__)
-    {
-        return parent::model($className);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function getApiAttributes(\propel\models\<?=$modelClassSingular?> $item, $level = 0)
     {
         $return = parent::getApiAttributes($item, $level);
@@ -52,25 +44,25 @@ class RestApi<?=$modelClassSingular?> extends BaseRestApi<?=$modelClassSingular.
     /**
      * @inheritdoc
      */
-    public function setCreateAttributes($requestAttributes)
+    public static function setCreateAttributes(\propel\models\<?=$modelClassSingular?> $item, $requestAttributes)
     {
-        parent::setCreateAttributes($requestAttributes);
+        parent::setCreateAttributes($item, $requestAttributes);
     }
 
     /**
      * @inheritdoc
      */
-    public function setUpdateAttributes($requestAttributes)
+    public static function setUpdateAttributes(\propel\models\<?=$modelClassSingular?> $item, $requestAttributes)
     {
-        parent::setUpdateAttributes($requestAttributes);
+        parent::setUpdateAttributes($item, $requestAttributes);
     }
 
     /**
      * @inheritdoc
      */
-    public function setItemAttributes($requestAttributes)
+    public static function setItemAttributes(\propel\models\<?=$modelClassSingular?> $item, $requestAttributes)
     {
-        parent::setItemAttributes($requestAttributes);
+        parent::setItemAttributes($item, $requestAttributes);
     }
 
 }

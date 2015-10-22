@@ -44,6 +44,7 @@ class <?=$generator->controllerClass?> extends <?=$generator->baseControllerClas
         );
     }
 
+<?php
     /*
     public function filters()
     {
@@ -68,13 +69,13 @@ class <?=$generator->controllerClass?> extends <?=$generator->baseControllerClas
             ),
         ));
     }
-    */
+    * /
 
     /**
      * @param int $id the model id.
      * @return <?=$generator->modelClass."\n"?>
      * @throws CHttpException
-     */
+     * /
     /*
     public function loadModel($id)
     {
@@ -84,11 +85,11 @@ class <?=$generator->controllerClass?> extends <?=$generator->baseControllerClas
         }
         return $model;
     }
-    */
+    * /
 
     /**
      * TODO
-     */
+     * /
     /*
     public function actionValidation($model)
     {
@@ -98,5 +99,5 @@ class <?=$generator->controllerClass?> extends <?=$generator->baseControllerClas
         }
     }
     */
-
+?>
 }

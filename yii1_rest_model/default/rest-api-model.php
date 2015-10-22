@@ -12,16 +12,10 @@ $modelClassPlural = Inflector::camelize($modelClassPluralWords);
 echo "<?php\n";
 ?>
 
-class BaseRestApi<?=$modelClassSingular?> extends <?=$modelClassSingular."\n"?>
-{
+use Propel\Runtime\Map\TableMap;
 
-    /**
-     * @inheritdoc
-     */
-    public static function model($className = __CLASS__)
-    {
-        return parent::model($className);
-    }
+class BaseRestApi<?=$modelClassSingular."\n"?>
+{
 
     /**
      * Returns "all" attributes for this resource.
@@ -142,21 +136,22 @@ endforeach;
         return $attributes;
     }
 
-    public function setCreateAttributes($requestAttributes)
+    public static function setCreateAttributes(\propel\models\<?=$modelClassSingular?> $item, $requestAttributes)
     {
-        $this->setItemAttributes($requestAttributes);
+        static::setItemAttributes($item, $requestAttributes);
     }
 
-    public function setUpdateAttributes($requestAttributes)
+    public static function setUpdateAttributes(\propel\models\<?=$modelClassSingular?> $item, $requestAttributes)
     {
-        $this->setItemAttributes($requestAttributes);
+        static::setItemAttributes($item, $requestAttributes);
     }
 
     /**
      * Sets the underlying item attributes.
      */
-    public function setItemAttributes($requestAttributes)
+    public static function setItemAttributes(\propel\models\<?=$modelClassSingular?> $item, $requestAttributes)
     {
+        $row = [];
 <?php
 if (!method_exists($model, 'itemTypeAttributes')) {
     throw new Exception("Model ".get_class($model)." does not have method itemTypeAttributes()");
@@ -197,13 +192,13 @@ foreach ($model->itemTypeAttributes() as $attribute => $attributeInfo):
             $fkAttribute = $relationInfo[2];
 
 ?>
-        $this-><?=$fkAttribute?> = $requestAttributes['attributes']-><?=$attribute?>->id;
+        $row['<?=$fkAttribute?>'] = $requestAttributes['attributes']-><?=$attribute?>->id;
 <?php
             break;
         case "ordinary":
         case "primary-key":
 ?>
-        $this-><?=$attribute?> = $requestAttributes['attributes']-><?=$attribute?>;
+        $row['<?=$attribute?>'] = $requestAttributes['attributes']-><?=$attribute?>;
 <?php
             break;
         default:
@@ -213,6 +208,8 @@ foreach ($model->itemTypeAttributes() as $attribute => $attributeInfo):
 
 endforeach;
 ?>
+        $item->fromArray($row, TableMap::TYPE_FIELDNAME);
+
     }
 
 }

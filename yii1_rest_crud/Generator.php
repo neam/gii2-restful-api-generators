@@ -117,4 +117,40 @@ class Generator extends \neam\gii2_workflow_ui_generators\yii1_crud\Generator
         return \Yii::getAlias(str_replace('views', 'blueprints', $this->viewPath)) . '/';
     }
 
+    /**
+     * Alter validation rules to not require model class extending from an ActiveRecord class
+     * @return array
+     */
+    public function rules()
+    {
+        $rules = parent::rules();
+
+        // Alter the rule that restricts model classes to yii2 active records so that we can use yii 1 active records
+        foreach ($rules as $k=>&$rule) {
+            if ($rule[0][0] === "modelClass" && $rule[1] === "validateClass") {
+                unset($rules[$k]);
+            }
+        }
+
+        return $rules;
+    }
+
+    /**
+     * Skip checks if yii 1 model class is valid
+     */
+    public function validateModelClass()
+    {
+    }
+
+    /**
+     * Get model
+     */
+    public function getModel()
+    {
+        /* @var $class CActiveRecord */
+        $class = str_replace("RestApi", "", $this->modelClass);
+        return $class::model();
+    }
+
+
 }
