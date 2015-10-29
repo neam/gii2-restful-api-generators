@@ -71,15 +71,15 @@ foreach ($model->itemTypeAttributes() as $attribute => $attributeInfo):
         case "has-many-relation":
         case "many-many-relation":
 
+            // tmp until memory allocation has been resolved (likely via pagination and/or returning metadata about relations instead of the actual objects)
+            break;
+
             if (!isset($relations[$attribute])) {
                 throw new Exception("Model ".get_class($model)." does not have a relation '$attribute'");
             }
             $relationInfo = $relations[$attribute];
             $relatedModelClass = $relationInfo[1];
             $relationAttribute = $relationInfo[2];
-
-            // tmp until memory allocation has been resolved (likely via pagination and/or returning metadata about relations instead of the actual objects)
-            break;
 
 ?>
             '<?=$attribute?>' => RelatedItems::formatItems(
@@ -164,15 +164,15 @@ foreach ($model->itemTypeAttributes() as $attribute => $attributeInfo):
         case "many-many-relation":
         case "belongs-to-relation":
 
+            // tmp ignore for now - may be implemented later
+            // requires some refactoring, proper use of transactions and handling of various edge cases
+            break;
+
             if (!isset($relations[$attribute])) {
                 throw new Exception("Model ".get_class($model)." does not have a relation '$attribute'");
             }
             $relationInfo = $relations[$attribute];
             $relatedModelClass = "RestApi".$relationInfo[1];
-
-            // tmp ignore for now - may be implemented later
-            // requires some refactoring, proper use of transactions and handling of various edge cases
-            break;
 
 ?>
         RelatedItems::set|saveRelatedItems(
