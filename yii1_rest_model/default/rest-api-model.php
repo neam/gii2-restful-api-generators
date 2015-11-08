@@ -36,12 +36,12 @@ class BaseRestApi<?=$modelClassSingular."\n"?>
     public static function getApiAttributes(\propel\models\<?=$modelClassSingular?> $item, $level = 0)
     {
         return array(
-            'id' => $item->getId(),
+            'id' => $item->getPrimaryKey(),
 <?php if (in_array($modelClassSingular, array_keys(\ItemTypes::where('is_graph_relatable')))): ?>
-            'node_id' => $item->getId() ? (int) /* $item->ensureNode()->id */ -1 : null,
+            'node_id' => $item->getPrimaryKey() ? (int) /* $item->ensureNode()->id */ -1 : null,
 <?php endif; ?>
             'item_type' => '<?= $itemTypeSingularRef ?>',
-            'item_label' => $item->getId() ? $item->getItemLabel() : '[[none]]',
+            'item_label' => $item->getPrimaryKey() ? $item->getItemLabel() : '[[none]]',
             'attributes' => array_merge(
                 static::getListableAttributes($item, $level),
                 array()
