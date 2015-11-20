@@ -20,11 +20,10 @@ class <?=$generator->controllerClass?> extends <?=$generator->baseControllerClas
 
     protected $_modelName = "<?=$generator->modelClass?>"; //model to be used as resource
 
-    public function actions() //determine which of the standard actions will support the controller
+    public function actions() // controller-specific configuration for some actions
     {
         return array(
-            'list' => array( //use for get list of objects
-                'class' => 'WRestListAction',
+            'list' => array(
                 'filterBy' => array(
                     //this param is used in `where` expression when forming an db query
                     // 'name_in_table' => '<?= $dnaModelClassSingular ?>_request_param_name'
@@ -34,13 +33,6 @@ class <?=$generator->controllerClass?> extends <?=$generator->baseControllerClas
                 'page' => '<?= $dnaModelClassSingular ?>_page', //request parameter name, which will contain requested page num
                 'order' => '<?= $dnaModelClassSingular ?>_order', //request parameter name, which will contain ordering for sort
             ),
-            'delete' => 'WRestDeleteAction',
-            'get' => 'WRestGetAction',
-            'create' => 'WRestCreateAction', //provide 'scenario' param
-            'update' => array(
-                'class' => 'WRestUpdateAction',
-                'scenario' => 'update', //as well as in WRestCreateAction optional param
-            )
         );
     }
 
