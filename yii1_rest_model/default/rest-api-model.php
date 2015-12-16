@@ -65,7 +65,13 @@ if (!method_exists($model, 'itemTypeAttributes')) {
     throw new Exception("Model ".get_class($model)." does not have method itemTypeAttributes()");
 }
 $relations = $model->relations();
+
 foreach ($model->itemTypeAttributes() as $attribute => $attributeInfo):
+
+    // Do not consider attributes referencing other item types
+    if (strpos($attribute, '/') !== false) {
+        continue;
+    }
 
     switch ($attributeInfo["type"]) {
         case "has-many-relation":
@@ -157,7 +163,14 @@ if (!method_exists($model, 'itemTypeAttributes')) {
     throw new Exception("Model ".get_class($model)." does not have method itemTypeAttributes()");
 }
 $relations = $model->relations();
+$deepAttributes = [];
 foreach ($model->itemTypeAttributes() as $attribute => $attributeInfo):
+
+    // Special consideration for attributes referencing other item types
+    if (strpos($attribute, '/') !== false) {
+        $deepAttributes[$attribute] = $attributeInfo;
+        continue;
+    }
 
     switch ($attributeInfo["type"]) {
         case "has-many-relation":
@@ -210,6 +223,13 @@ endforeach;
 ?>
         $item->fromArray($row, TableMap::TYPE_FIELDNAME);
 
+<?php if (!empty($deepAttributes)): ?>
+/* TODO:
+<?php
+print_r($deepAttributes);
+?>
+*/
+<?php endif; ?>
     }
 
 }
