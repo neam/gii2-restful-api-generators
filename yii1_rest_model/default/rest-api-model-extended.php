@@ -17,27 +17,18 @@ class RestApi<?=$modelClassSingular?> extends BaseRestApi<?=$modelClassSingular.
     /**
      * @inheritdoc
      */
-    public static function getApiAttributes(\propel\models\<?=$modelClassSingular?> $item, $level = 0)
+    public static function getApiAttributes(\propel\models\<?=$modelClassSingular?> $item)
     {
-        $return = parent::getApiAttributes($item, $level);
+        $return = parent::getApiAttributes($item);
         return $return;
     }
 
     /**
      * @inheritdoc
      */
-    public static function getListableAttributes(\propel\models\<?=$modelClassSingular?> $item, $level = 0)
+    public static function getItemAttributes(\propel\models\<?=$modelClassSingular?> $item)
     {
-        $return = parent::getListableAttributes($item, $level);
-        return $return;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getRelatedAttributes(\propel\models\<?=$modelClassSingular?> $item, $level)
-    {
-        $return = parent::getRelatedAttributes($item, $level);
+        $return = parent::getItemAttributes($item);
         return $return;
     }
 

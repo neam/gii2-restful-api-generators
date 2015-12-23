@@ -194,6 +194,7 @@ class Generator extends \neam\gii2_dna_project_base_generators\yii1_model\Genera
                     }
 
                     $attributeInfo['relatedModelClass'] = $relationInfo->getForeignTable()->getPhpName();
+                    $attributeInfo['relatedItemGetterMethod'] = "get" . $relationInfo->getName();
                     $attributeInfo['relatedItemSetterMethod'] = "set" . $relationInfo->getName();
 
                     break;
@@ -221,6 +222,7 @@ class Generator extends \neam\gii2_dna_project_base_generators\yii1_model\Genera
                     $localColumn = array_shift($relationInfo->getLocalColumns());
                     $attributeInfo['relatedModelClass'] = $relationInfo->getForeignTable()->getPhpName();
                     $attributeInfo['fkAttribute'] = $localColumn->getName();
+                    $attributeInfo['relatedItemGetterMethod'] = "get" . $relationInfo->getName();
                     $attributeInfo['relatedItemSetterMethod'] = "set" . $relationInfo->getName();
 
                     break;
