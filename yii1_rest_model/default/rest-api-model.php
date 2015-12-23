@@ -66,10 +66,10 @@ if (!method_exists($model, 'itemTypeAttributes')) {
 }
 $relations = $model->relations();
 
-foreach ($model->itemTypeAttributes() as $attribute => $attributeInfo):
+foreach ($itemTypeAttributes as $attribute => $attributeInfo):
 
-    // Do not consider attributes referencing other item types
-    if (strpos($attribute, '/') !== false) {
+    // Deep attributes are handled indirectly via their parent attributes
+    if (array_key_exists('throughAttribute', $attributeInfo)) {
         continue;
     }
 
@@ -92,7 +92,7 @@ foreach ($model->itemTypeAttributes() as $attribute => $attributeInfo):
                 "<?=$relatedModelClass?>",
                 $item,
                 "<?=Inflector::camelize($relationAttribute)?>",
-                $level
+                <?= (array_key_exists('deepAttributes', $attributeInfo) ? '$level - 1 // deep attribute requires an extra level of depth' : '$level')."\n" ?>
             ),
 <?php
             break;
@@ -111,7 +111,7 @@ foreach ($model->itemTypeAttributes() as $attribute => $attributeInfo):
                 "<?=$relatedModelClass?>",
                 $item,
                 "<?=Inflector::camelize($relationAttribute)?>",
-                $level
+                <?= (array_key_exists('deepAttributes', $attributeInfo) ? '$level - 1 // deep attribute requires an extra level of depth' : '$level')."\n" ?>
             ),
 <?php
             break;
@@ -162,13 +162,10 @@ endforeach;
 if (!method_exists($model, 'itemTypeAttributes')) {
     throw new Exception("Model ".get_class($model)." does not have method itemTypeAttributes()");
 }
-$relations = $model->relations();
-$deepAttributes = [];
-foreach ($model->itemTypeAttributes() as $attribute => $attributeInfo):
+foreach ($itemTypeAttributes as $attribute => $attributeInfo):
 
-    // Special consideration for attributes referencing other item types
-    if (strpos($attribute, '/') !== false) {
-        $deepAttributes[$attribute] = $attributeInfo;
+    // Deep attributes are handled indirectly via their parent attributes
+    if (array_key_exists('throughAttribute', $attributeInfo)) {
         continue;
     }
 
@@ -179,39 +176,26 @@ foreach ($model->itemTypeAttributes() as $attribute => $attributeInfo):
 
             // tmp ignore for now - may be implemented later
             // requires some refactoring, proper use of transactions and handling of various edge cases
+            echo "        // {$attributeInfo["type"]} $attribute TODO\n";
             break;
-
-            if (!isset($relations[$attribute])) {
-                throw new Exception("Model ".get_class($model)." does not have a relation '$attribute'");
-            }
-            $relationInfo = $relations[$attribute];
-            $relatedModelClass = "RestApi".$relationInfo[1];
 
 ?>
         RelatedItems::set|saveRelatedItems(
-            "<?=$relatedModelClass?>",
+            "<?=$attributeInfo['relatedModelClass']?>",
             '<?=$attribute?>',
-            $requestAttributes['attributes']['<?=$attribute?>']
+            $requestAttributes->attributes-><?=$attribute?>
         ),
 <?php
             break;
         case "has-one-relation":
-
-            if (!isset($relations[$attribute])) {
-                throw new Exception("Model ".get_class($model)." does not have a relation '$attribute'");
-            }
-            $relationInfo = $relations[$attribute];
-            $relatedModelClass = "RestApi".$relationInfo[1];
-            $fkAttribute = $relationInfo[2];
-
 ?>
-        $row['<?=$fkAttribute?>'] = $requestAttributes['attributes']-><?=$attribute?>->id;
+        RelatedItems::setRelatedItemAttributes('<?= $attributeInfo['relatedModelClass'] ?>', $item, $requestAttributes, '<?=$attribute?>', '<?=$attributeInfo['fkAttribute']?>', '<?=$attributeInfo['relatedItemSetterMethod']?>');
 <?php
             break;
         case "ordinary":
         case "primary-key":
 ?>
-        $row['<?=$attribute?>'] = $requestAttributes['attributes']-><?=$attribute?>;
+        $row['<?=$attribute?>'] = $requestAttributes->attributes-><?=$attribute?>;
 <?php
             break;
         default:
@@ -221,15 +205,10 @@ foreach ($model->itemTypeAttributes() as $attribute => $attributeInfo):
 
 endforeach;
 ?>
+
+        // Use $row contents to set item attributes
         $item->fromArray($row, TableMap::TYPE_FIELDNAME);
 
-<?php if (!empty($deepAttributes)): ?>
-/* TODO:
-<?php
-print_r($deepAttributes);
-?>
-*/
-<?php endif; ?>
     }
 
 }
