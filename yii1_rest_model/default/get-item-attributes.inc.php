@@ -48,23 +48,26 @@ foreach ($itemTypeAttributes as $attribute => $attributeInfo):
                     "$modelClass.$attribute - No relation information available"
                 );
             }
+
+            $relatedItemReferenceBase = $itemReferenceBase . '->' . $attributeInfo["relatedItemGetterMethod"] . '()';
+
 ?>
             '<?=$attribute?>' => [
-                'id' => <?= $itemReferenceBase ?>->getPrimaryKey(),
+                'id' => $relatedPk = (<?= $relatedItemReferenceBase ?> ? <?= $relatedItemReferenceBase ?>->getPrimaryKey() : null),
 <?php if (in_array($modelClass, array_keys(\ItemTypes::where('is_graph_relatable')))): ?>
-                'node_id' => <?= $itemReferenceBase ?>->getPrimaryKey() ? (int) /* <?= $itemReferenceBase ?>->ensureNode()->id */ -1 : null,
+                'node_id' => $relatedPk ? (int) /* <?= $relatedItemReferenceBase ?>->ensureNode()->id */ -1 : null,
 <?php endif; ?>
                 'item_type' => '<?= $itemTypeSingularRef ?>',
-                'item_label' => <?= $itemReferenceBase ?>->getPrimaryKey() ? <?= $itemReferenceBase ?>->getItemLabel() : '[[none]]',
+                'item_label' => $relatedPk ? <?= $relatedItemReferenceBase ?>->getItemLabel() : '[[none]]',
 <?php if (array_key_exists('deepAttributes', $attributeInfo)): ?>
                 'attributes' => [
 <?php
-echo $this->render('item-type-attributes-data-schema.inc.php',
+echo $this->render('get-item-attributes.inc.php',
     [
         "itemTypeAttributes" => $attributeInfo['deepAttributes'],
         "level" => $level,
         "modelClass" => $attributeInfo["relatedModelClass"],
-        "itemReferenceBase" => $itemReferenceBase . '->' . $attributeInfo["relatedItemGetterMethod"] . '()'
+        "itemReferenceBase" => $relatedItemReferenceBase,
     ]
 );
 ?>

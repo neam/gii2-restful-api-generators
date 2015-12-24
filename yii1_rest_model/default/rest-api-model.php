@@ -45,7 +45,7 @@ class BaseRestApi<?=$modelClassSingular."\n"?>
     {
         return [
 <?php
-echo $this->render('item-type-attributes-data-schema.inc.php',
+echo $this->render('get-item-attributes.inc.php',
     [
         "itemTypeAttributes" => $itemTypeAttributes,
         "level" => $level = 0,
@@ -59,12 +59,12 @@ echo $this->render('item-type-attributes-data-schema.inc.php',
 
     public static function setCreateAttributes(\propel\models\<?=$modelClassSingular?> $item, $requestAttributes)
     {
-        static::setApiAttributes($item, $requestAttributes);
+        static::setItemAttributes($item, $requestAttributes);
     }
 
     public static function setUpdateAttributes(\propel\models\<?=$modelClassSingular?> $item, $requestAttributes)
     {
-        static::setApiAttributes($item, $requestAttributes);
+        static::setItemAttributes($item, $requestAttributes);
     }
 
     /**
@@ -72,58 +72,17 @@ echo $this->render('item-type-attributes-data-schema.inc.php',
      */
     public static function setItemAttributes(\propel\models\<?=$modelClassSingular?> $item, $requestAttributes)
     {
-        $row = [];
 <?php
-if (!method_exists($model, 'itemTypeAttributes')) {
-    throw new Exception("Model ".get_class($model)." does not have method itemTypeAttributes()");
-}
-foreach ($itemTypeAttributes as $attribute => $attributeInfo):
-
-    // Deep attributes are handled indirectly via their parent attributes
-    if (array_key_exists('throughAttribute', $attributeInfo)) {
-        continue;
-    }
-
-    switch ($attributeInfo["type"]) {
-        case "has-many-relation":
-        case "many-many-relation":
-        case "belongs-to-relation":
-
-            // tmp ignore for now - may be implemented later
-            // requires some refactoring, proper use of transactions and handling of various edge cases
-            echo "        // {$attributeInfo["type"]} $attribute TODO\n";
-            break;
-
+echo $this->render('set-item-attributes.inc.php',
+    [
+        "itemTypeAttributes" => $itemTypeAttributes,
+        "level" => $level = 0,
+        "modelClass" => $modelClassSingular,
+        "itemReferenceBase" => '$item',
+        "requestAttributesReferenceBase" => '$requestAttributes->attributes',
+    ]
+);
 ?>
-        RelatedItems::set|saveRelatedItems(
-            "<?=$attributeInfo['relatedModelClass']?>",
-            '<?=$attribute?>',
-            $requestAttributes->attributes-><?=$attribute?>
-        ),
-<?php
-            break;
-        case "has-one-relation":
-?>
-        RelatedItems::setRelatedItemAttributes('<?= $attributeInfo['relatedModelClass'] ?>', $item, $requestAttributes, '<?=$attribute?>', '<?=$attributeInfo['fkAttribute']?>', '<?=$attributeInfo['relatedItemSetterMethod']?>');
-<?php
-            break;
-        case "ordinary":
-        case "primary-key":
-?>
-        $row['<?=$attribute?>'] = $requestAttributes->attributes-><?=$attribute?>;
-<?php
-            break;
-        default:
-            // ignore
-            break;
-    }
-
-endforeach;
-?>
-
-        // Use $row contents to set item attributes
-        $item->fromArray($row, TableMap::TYPE_FIELDNAME);
-
     }
 
 }
