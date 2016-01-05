@@ -52,15 +52,11 @@ foreach ($itemTypeAttributes as $attribute => $attributeInfo):
             $relatedItemReferenceBase = $itemReferenceBase . '->' . $attributeInfo["relatedItemGetterMethod"] . '()';
 
 ?>
-            '<?=$attribute?>' => [
-                'id' => $relatedPk = (<?= $relatedItemReferenceBase ?> ? <?= $relatedItemReferenceBase ?>->getPrimaryKey() : null),
-<?php if (in_array($modelClass, array_keys(\ItemTypes::where('is_graph_relatable')))): ?>
-                'node_id' => $relatedPk ? (int) /* <?= $relatedItemReferenceBase ?>->ensureNode()->id */ -1 : null,
-<?php endif; ?>
-                'item_type' => '<?= $itemTypeSingularRef ?>',
-                'item_label' => $relatedPk ? <?= $relatedItemReferenceBase ?>->getItemLabel() : '[[none]]',
+            '<?=$attribute?>' => array_merge(
+                RestApi<?= $attributeInfo['relatedModelClass'] ?>::getWrapperAttributes(<?= $itemReferenceBase ?> ? <?= $relatedItemReferenceBase ?> : null),
+                [
 <?php if (array_key_exists('deepAttributes', $attributeInfo)): ?>
-                'attributes' => [
+                    'attributes' => [
 <?php
 echo $this->render('get-item-attributes.inc.php',
     [
@@ -71,16 +67,17 @@ echo $this->render('get-item-attributes.inc.php',
     ]
 );
 ?>
-                ],
+                    ]
 <?php endif; ?>
-            ],
+                ]
+            ),
 <?php
             break;
         case "ordinary":
         case "primary-key":
             $camelizedAttribute = Inflector::camelize($attribute);
 ?>
-            '<?=$attribute?>' => <?= $itemReferenceBase ?>->get<?=$camelizedAttribute?>("Y-m-d H:i:s"),
+            '<?=$attribute?>' => <?= $itemReferenceBase ?> ? <?= $itemReferenceBase ?>->get<?=$camelizedAttribute?>("Y-m-d H:i:s") : null,
 <?php
             break;
         default:

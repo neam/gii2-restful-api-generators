@@ -19,20 +19,34 @@ class BaseRestApi<?=$modelClassSingular."\n"?>
 
     /**
      * Returns rest api attributes for this resource, consisting of the item's core attributes
-     * wrapped in an array containing the item's virtual attributes (item_label, item_type etc)
+     * wrapped in an array containing the item's wrapper attributes (item_label, item_type etc)
      *
      * @return array
      */
     public static function getApiAttributes(\propel\models\<?=$modelClassSingular?> $item)
     {
+        return array_merge(
+            static::getWrapperAttributes($item),
+            [
+                'attributes' => static::getItemAttributes($item),
+            ]
+        );
+    }
+
+    /**
+     * Returns the item's wrapper attributes (item_label, item_type etc)
+     *
+     * @return array
+     */
+    public static function getWrapperAttributes(\propel\models\<?=$modelClassSingular?> $item = null)
+    {
         return [
-            'id' => $item->getPrimaryKey(),
+            'id' => $item ? $item->getPrimaryKey() : null,
 <?php if (in_array($modelClassSingular, array_keys(\ItemTypes::where('is_graph_relatable')))): ?>
-            'node_id' => $item->getPrimaryKey() ? (int) /* $item->ensureNode()->id */ -1 : null,
+            'node_id' => ($item && $item->getPrimaryKey()) ? (int) /* $item->ensureNode()->id */ -1 : null,
 <?php endif; ?>
             'item_type' => '<?= $itemTypeSingularRef ?>',
-            'item_label' => $item->getPrimaryKey() ? $item->getItemLabel() : '[[none]]',
-            'attributes' => static::getItemAttributes($item),
+            'item_label' => ($item && $item->getPrimaryKey()) ? $item->getItemLabel() : '[[none]]',
         ];
     }
 

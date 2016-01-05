@@ -26,6 +26,15 @@ class RestApi<?=$modelClassSingular?> extends BaseRestApi<?=$modelClassSingular.
     /**
      * @inheritdoc
      */
+    public static function getWrapperAttributes(\propel\models\<?=$modelClassSingular?> $item = null)
+    {
+        $return = parent::getWrapperAttributes($item);
+        return $return;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function getItemAttributes(\propel\models\<?=$modelClassSingular?> $item)
     {
         $return = parent::getItemAttributes($item);
