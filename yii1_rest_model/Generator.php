@@ -82,7 +82,10 @@ class Generator extends \neam\gii2_dna_project_base_generators\yii1_model\Genera
         if (!empty($exceptions)) {
             $summary = "";
             foreach ($exceptions as $exception) {
-                $summary .= "\n------\n" . $exception->getMessage() . "\n";
+                /** @var \Exception $exception */
+                $summary .= "\n------\n{" . get_class($exception) . "} " . $exception->getMessage(
+                    ) . " [" . $exception->getFile() . ", line " . $exception->getLine(
+                    ) . "]\n\nTrace: \n\n" . $exception->getTraceAsString() . "\n\n";
             }
             throw new \Exception("Exceptions occurred during generation: \n$summary");
         }
@@ -184,7 +187,7 @@ class Generator extends \neam\gii2_dna_project_base_generators\yii1_model\Genera
                         $relatedModelClass = Inflector::singularize(ucfirst($_[0]));
                         if (in_array($relatedModelClass, $relations)) {
                             $relationName = $relatedModelClass;
-                        } elseif (in_array($relatedModelClass . "RelatedBy" . $_[1], $relations)) {
+                        } elseif (isset($_[1]) && in_array($relatedModelClass . "RelatedBy" . $_[1], $relations)) {
                             $relationName = $relatedModelClass . "RelatedBy" . $_[1];
                         } else {
                             $relationName = $attribute;
@@ -219,7 +222,8 @@ class Generator extends \neam\gii2_dna_project_base_generators\yii1_model\Genera
                     }
 
                     /** @var \Propel\Runtime\Map\ColumnMap $localColumn */
-                    $localColumn = array_shift($relationInfo->getLocalColumns());
+                    $localColumns = $relationInfo->getLocalColumns();
+                    $localColumn = array_shift($localColumns);
                     $attributeInfo['relatedModelClass'] = $relationInfo->getForeignTable()->getPhpName();
                     $attributeInfo['fkAttribute'] = $localColumn->getName();
                     $attributeInfo['relatedItemGetterMethod'] = "get" . $relationInfo->getName();
@@ -239,6 +243,12 @@ class Generator extends \neam\gii2_dna_project_base_generators\yii1_model\Genera
                 "Could not find {$attributeInfo['type']} relation information for $modelClass->$attribute: " . $e->getMessage(
                 ) . "\nAvailable relations for {$tableMap->getPhpName()}: \n - " . implode("\n - ", $relations)
                 . (empty($attributeInfo['db_column']) ? "\n\nHint: By setting the db_column property in the item type attribute metadata, the relation information can be determined without guessing" : "")
+            );
+        } catch (\Propel\Runtime\Map\Exception\ColumnNotFoundException $e) {
+            throw new \Exception(
+                "Could not find {$attributeInfo['type']} relation information for $modelClass->$attribute due to a column not found exception: " . $e->getMessage(
+                ) . "\nAvailable relations for {$tableMap->getPhpName()}: \n - " . implode("\n - ", $relations)
+                . (empty($attributeInfo['db_column']) ? "\n\nHint: Make sure that the db_column property in the item type attribute metadata points to an existing column" : "")
             );
         }
 
