@@ -163,24 +163,24 @@ class Generator extends \neam\gii2_dna_project_base_generators\yii1_model\Genera
                     $relationInfo = null;
                     if (!empty($attributeInfo['db_column'])) {
                         // Method 1 - Use db_column information
+
+                        if (strpos($attributeInfo['db_column'], ".") === false) {
+                            throw new \Exception($attributeInfo['type']. " db_column needs to contain a dot that separates the related table with the relation attribute");
+                        }
+
                         $_ = explode(".", $attributeInfo['db_column']);
                         $relatedTable = $_[0];
                         $relatedColumn = $_[1];
 
                         $relations = $tableMap->getRelations();
-                        foreach ($relations as $relation) {
-                            var_dump(
-                                __LINE__,
-                                $relation->getColumnMappings(),
-                                $relation->getForeignTable()->getName(),
-                                $relatedTable
-                            );
+                        $relationInfo = null;
+                        foreach ($relations as $candidateRelation) {
+                            $columnMappings = $candidateRelation->getColumnMappings();
+                            if (array_key_exists($attributeInfo['db_column'], $columnMappings)) {
+                                $relationInfo = $candidateRelation;
+                                break;
+                            }
                         }
-                        throw new \Exception("TODO");
-                        exit(1);
-
-                        $column = $tableMap->getColumn();
-                        $relationInfo = $column->getRelation();
                     } else {
                         // Method 2 - Guess based on attribute name
                         $_ = explode("RelatedBy", $attribute);
