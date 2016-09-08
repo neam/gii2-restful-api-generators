@@ -79,7 +79,7 @@ echo $this->render('set-item-attributes.inc.php',
 <?php else:
             $camelizedAttribute = Inflector::camelize($attributeInfo['fkAttribute']);
 ?>
-        <?= $itemReferenceBase ?>->set<?=$camelizedAttribute?>(<?=$requestAttributesReferenceBase?>-><?=$attribute?>->id);
+        <?= $itemReferenceBase ?>->set<?=$camelizedAttribute?>(<?=$requestAttributesReferenceBase?>-><?=$attribute?>->id === '' ? null : <?=$requestAttributesReferenceBase?>-><?=$attribute?>->id);
 <?php endif;
 
             break;
