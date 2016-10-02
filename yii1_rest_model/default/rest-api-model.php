@@ -3,7 +3,7 @@
 use yii\helpers\Inflector;
 use yii\helpers\StringHelper;
 
-$modelClassSingular = get_class($model);
+$modelClassSingular = str_replace('propel\\models\\', '', get_class($model));
 $modelClassSingularWords = Inflector::camel2words($modelClassSingular);
 $itemTypeSingularRef = Inflector::camel2id($modelClassSingular, '_');
 $modelClassPluralWords = Inflector::pluralize($modelClassSingularWords);

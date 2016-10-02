@@ -2,6 +2,7 @@
 
 namespace neam\gii2_restful_api_generators\yii1_rest_model;
 
+use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
 use Yii;
 use yii\gii\CodeFile;
 use yii\helpers\Inflector;
@@ -49,7 +50,7 @@ class Generator extends \neam\gii2_dna_project_base_generators\yii1_model\Genera
 
             try {
 
-                $model = new $modelClass;
+                $model = $this->getModel($modelClass);
 
                 $params = [
                     'model' => $model,
@@ -99,7 +100,7 @@ class Generator extends \neam\gii2_dna_project_base_generators\yii1_model\Genera
      */
     public function getItemTypeAttributes($model)
     {
-        $modelClass = get_class($model);
+        $modelClass = str_replace('propel\\models\\', '', get_class($model));
         if (!method_exists($model, 'itemTypeAttributes')) {
             throw new \Exception("Model $modelClass does not have method itemTypeAttributes()");
         }
@@ -252,6 +253,16 @@ class Generator extends \neam\gii2_dna_project_base_generators\yii1_model\Genera
             );
         }
 
+    }
+
+    /**
+     * Get propel model
+     */
+    public function getModel($modelClass)
+    {
+        /* @var $class ActiveRecordInterface */
+        $class = '\\propel\\models\\' . $modelClass;
+        return new $class();
     }
 
 }

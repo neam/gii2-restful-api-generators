@@ -143,14 +143,13 @@ class Generator extends \neam\gii2_workflow_ui_generators\yii1_crud\Generator
     }
 
     /**
-     * Get model
+     * Get propel model
      */
     public function getModel()
     {
-        /* @var $class CActiveRecord */
-        $class = str_replace("RestApi", "", $this->modelClass);
-        return $class::model();
+        /* @var $class ActiveRecordInterface */
+        $class = '\\propel\\models\\' . str_replace("RestApi", "", $this->modelClass);
+        return new $class();
     }
-
 
 }
