@@ -182,6 +182,9 @@ class Generator extends \neam\gii2_dna_project_base_generators\yii1_model\Genera
                                 break;
                             }
                         }
+                        if (empty($relationInfo)) {
+                            throw new \Exception("Could not determine relation info for $modelClass->$attribute, where db_column metadata = '{$attributeInfo['db_column']}'");
+                        }
                     } else {
                         // Method 2 - Guess based on attribute name
                         $_ = explode("RelatedBy", $attribute);
@@ -197,7 +200,7 @@ class Generator extends \neam\gii2_dna_project_base_generators\yii1_model\Genera
 
                     }
 
-                    $attributeInfo['relatedModelClass'] = $relationInfo->getForeignTable()->getPhpName();
+                    $attributeInfo['relatedModelClass'] = $relationInfo->getLocalTable()->getPhpName();
                     $attributeInfo['relatedItemGetterMethod'] = "get" . $relationInfo->getName();
                     $attributeInfo['relatedItemSetterMethod'] = "set" . $relationInfo->getName();
 
