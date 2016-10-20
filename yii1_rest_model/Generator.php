@@ -225,6 +225,10 @@ class Generator extends \neam\gii2_dna_project_base_generators\yii1_model\Genera
                         $relationInfo = $tableMap->getRelation($relationName);
                     }
 
+                    if (empty($relationInfo)) {
+                        throw new \Exception("Relation info for attribute '$modelClass.$attribute' not found. Is it a relation? Double-check metadata, especially attribute type and db_column");
+                    }
+
                     /** @var \Propel\Runtime\Map\ColumnMap $localColumn */
                     $localColumns = $relationInfo->getLocalColumns();
                     $localColumn = array_shift($localColumns);
