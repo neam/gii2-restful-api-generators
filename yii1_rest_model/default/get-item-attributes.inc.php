@@ -49,7 +49,7 @@ foreach ($itemTypeAttributes as $attribute => $attributeInfo):
                 );
             }
 
-            $relatedItemReferenceBase = $itemReferenceBase . '->' . $attributeInfo["relatedItemGetterMethod"] . '()';
+            $relatedItemReferenceBase = $itemReferenceBase . '->' . $attributeInfo["relatedItemGetterMethod"] . '($con)';
 
 ?>
             '<?=$attribute?>' => array_merge(

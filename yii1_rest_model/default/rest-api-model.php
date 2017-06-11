@@ -13,6 +13,7 @@ echo "<?php\n";
 ?>
 
 use Propel\Runtime\Map\TableMap;
+use Propel\Runtime\Connection\ConnectionInterface;
 
 class BaseRestApi<?=$modelClassSingular."\n"?>
 {
@@ -23,12 +24,12 @@ class BaseRestApi<?=$modelClassSingular."\n"?>
      *
      * @return array
      */
-    public static function getApiAttributes(\propel\models\<?=$modelClassSingular?> $item)
+    public static function getApiAttributes(\propel\models\<?=$modelClassSingular?> $item, ConnectionInterface $con = null)
     {
         return array_merge(
-            static::getWrapperAttributes($item),
+            static::getWrapperAttributes($item, $con),
             [
-                'attributes' => static::getItemAttributes($item),
+                'attributes' => static::getItemAttributes($item, $con),
             ]
         );
     }
@@ -38,7 +39,7 @@ class BaseRestApi<?=$modelClassSingular."\n"?>
      *
      * @return array
      */
-    public static function getWrapperAttributes(\propel\models\<?=$modelClassSingular?> $item = null)
+    public static function getWrapperAttributes(\propel\models\<?=$modelClassSingular?> $item = null, ConnectionInterface $con = null)
     {
         return [
             'id' => $item ? $item->getPrimaryKey() : null,
@@ -55,7 +56,7 @@ class BaseRestApi<?=$modelClassSingular."\n"?>
      *
      * @return array
      */
-    public static function getItemAttributes(\propel\models\<?=$modelClassSingular?> $item)
+    public static function getItemAttributes(\propel\models\<?=$modelClassSingular?> $item, ConnectionInterface $con = null)
     {
         return [
 <?php

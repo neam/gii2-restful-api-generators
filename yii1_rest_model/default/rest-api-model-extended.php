@@ -11,33 +11,35 @@ $modelClassPlural = Inflector::camelize($modelClassPluralWords);
 echo "<?php\n";
 ?>
 
+use Propel\Runtime\Connection\ConnectionInterface;
+
 class RestApi<?=$modelClassSingular?> extends BaseRestApi<?=$modelClassSingular."\n"?>
 {
 
     /**
      * @inheritdoc
      */
-    public static function getApiAttributes(\propel\models\<?=$modelClassSingular?> $item)
+    public static function getApiAttributes(\propel\models\<?=$modelClassSingular?> $item, ConnectionInterface $con = null)
     {
-        $return = parent::getApiAttributes($item);
+        $return = parent::getApiAttributes($item, $con);
         return $return;
     }
 
     /**
      * @inheritdoc
      */
-    public static function getWrapperAttributes(\propel\models\<?=$modelClassSingular?> $item = null)
+    public static function getWrapperAttributes(\propel\models\<?=$modelClassSingular?> $item = null, ConnectionInterface $con = null)
     {
-        $return = parent::getWrapperAttributes($item);
+        $return = parent::getWrapperAttributes($item, $con);
         return $return;
     }
 
     /**
      * @inheritdoc
      */
-    public static function getItemAttributes(\propel\models\<?=$modelClassSingular?> $item)
+    public static function getItemAttributes(\propel\models\<?=$modelClassSingular?> $item, ConnectionInterface $con = null)
     {
-        $return = parent::getItemAttributes($item);
+        $return = parent::getItemAttributes($item, $con);
         return $return;
     }
 
